@@ -1,0 +1,124 @@
+// Global variables
+var browserWidth;
+var visibleCount;
+var visibleCount2;
+
+// Set responsive breakpoints to determine how many items are displayed for each carousel
+function setBreakpointsCarousel1() {
+	browserWidth = $('html').width();
+	if (browserWidth >= 1042) {
+		visibleCount = 5;
+	} else if ((browserWidth <= 1091) && (browserWidth >= 880)) {
+		visibleCount = 4;
+	} else if ((browserWidth <= 879) && (browserWidth >= 600)) {
+		visibleCount = 3;
+	} else if ((browserWidth <= 599) && (browserWidth >= 480)) {
+		visibleCount = 2;
+	} else {
+		visibleCount = 1;
+	}
+
+	return visibleCount;
+}
+
+function setBreakpointsCarousel2() {
+	browserWidth = $('html').width();
+	if (browserWidth >= 1042) {
+		visibleCount2 = 4;
+	} else {
+		visibleCount2 = 2;
+	}
+
+	return visibleCount2;
+}
+
+
+// Reusable carousel function
+function swnCarousel(container, visibleCallback, navLeft, navRight) {
+	var visible = visibleCallback();
+
+	// duplicates all slides for infinite scroll
+	var duplicateSlides = $(container).children("ul").children().clone();
+	$(container).children("ul").append(duplicateSlides);
+	$(container).children("ul").children("li").last().insertBefore($(container).children("ul").children("li").first());
+
+	// determines width of each slide
+	var slides = $(container).children("ul").children();
+	var carouselInnerWidth = $(container).width();
+	var slideWidth = Math.ceil((carouselInnerWidth) / visible);
+
+	// moves carousel into place
+	$(container).children("ul").children("li").width(slideWidth);
+	$(container).children("ul").css({
+		'left': -slideWidth
+	});
+
+	// Navigation Left
+	$(navLeft).on("click", function (event) {
+		var visible = visibleCallback();
+
+		var carouselInnerWidth = $(container).width();
+		var slideWidth = Math.ceil((carouselInnerWidth) / visible);
+		$(container).children("ul").animate({ 'left': "+=" + slideWidth }, 200, function () {
+			$(container).children("ul").children("li").last().insertBefore($(container).children("ul").children("li").first());
+			slides.width(slideWidth);
+			$(container).children("ul").css({
+				'left': -slideWidth
+			});
+		});
+	});
+
+	// Navigation Right
+	$(navRight).on("click", function (event) {
+		var visible = visibleCallback();
+
+		var carouselInnerWidth = $(container).width();
+		var slideWidth = Math.ceil((carouselInnerWidth) / visible);
+
+		$(container).children("ul").animate({ 'left': "-=" + slideWidth }, 200, function () {
+			$(container).children("ul").children("li").first().insertAfter($(container).children("ul").children("li").last());
+			slides.width(slideWidth);
+			$(container).children("ul").css({
+				'left': -slideWidth
+			});
+		});
+	});
+	
+}
+
+// Resusable carousel resize function 
+function swnCarouselResize(container, visible) {
+	//Determine slide width
+	var carouselInnerWidth = $(container).width();
+	var slideWidth = Math.ceil((carouselInnerWidth) / visible);
+
+	//Adjust slide width and carousel postition
+	$(container).children("ul").children("li").width(slideWidth);
+	$(container).children("ul").css({
+		'left': -slideWidth
+	});
+}
+
+$(document).ready(function () {
+	setBreakpointsCarousel1();
+	setBreakpointsCarousel2();
+
+	//Call function for specific carousel
+	swnCarousel(".carousel .carouselInner", setBreakpointsCarousel1, ".carousel .navLeft", ".carousel .navRight");
+
+	//Call function for specific carousel
+	swnCarousel(".secondCarousel .carouselInner", setBreakpointsCarousel2, ".secondCarousel .navLeft", ".secondCarousel .navRight");
+
+});
+
+$(window).on("resize", function (event) {
+	setBreakpointsCarousel1();
+	setBreakpointsCarousel2();
+
+	//Call function for specific carousel
+	swnCarouselResize(".carousel .carouselInner", visibleCount);
+
+	//Call function for specific carousel
+	swnCarouselResize(".secondCarousel .carouselInner", visibleCount2);
+
+});
